@@ -26,9 +26,9 @@ const CharacterGraph: React.FC<Props> = ({ characterId }) => {
     dispatch(peopleActions.starshipsInit());
     dispatch(peopleActions.peopleInit());
 
-    console.log('people: ', people);
-    console.log('starships: ', starships);
-    console.log('films: ', films);
+    // console.log('people: ', people);
+    // console.log('starships: ', starships);
+    // console.log('films: ', films);
   }, [films, starships, people, characterId]);
 
   // Update nodes and edges for the graph based on character data
@@ -96,8 +96,8 @@ const CharacterGraph: React.FC<Props> = ({ characterId }) => {
         setNodes([characterNode, ...filmNodes, ...starshipNodes]);
         setEdges([...filmEdges, ...starshipEdges]);
 
-        console.log('Nodes:', [characterNode, ...filmNodes, ...starshipNodes]);
-        console.log('Edges:', [...filmEdges, ...starshipEdges]);
+        // console.log('Nodes:', [characterNode, ...filmNodes, ...starshipNodes]);
+        // console.log('Edges:', [...filmEdges, ...starshipEdges]);
       }
     }
   }, [films, starships, people, characterId]);
