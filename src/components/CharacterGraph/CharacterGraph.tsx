@@ -29,7 +29,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId }) => {
     console.log('people: ', people);
     console.log('starships: ', starships);
     console.log('films: ', films);
-  }, [dispatch]);
+  }, [films, starships, people, characterId]);
 
   // Update nodes and edges for the graph based on character data
   useEffect(() => {
