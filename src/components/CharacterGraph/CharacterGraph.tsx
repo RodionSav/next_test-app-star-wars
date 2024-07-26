@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import ReactFlow, { MiniMap, Controls, Background, Node, Edge } from "react-flow-renderer";
 import * as peopleActions from "../features/peopleSlice";
 import { useAppDispatch, useAppSelector } from "@/reduxApp/hooks";
@@ -20,20 +20,20 @@ const CharacterGraph: React.FC<Props> = ({ characterId }) => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
-    // Fetch films and starships data when the component mounts
-
+  // Fetch films and starships data when the component mounts
   useEffect(() => {
     dispatch(peopleActions.filmsInit());
     dispatch(peopleActions.starshipsInit());
     dispatch(peopleActions.peopleInit());
 
-    console.log(people, films, starships);
+    console.log('people: ', people);
+    console.log('starships: ', starships);
+    console.log('films: ', films);
   }, [dispatch]);
 
-    // Update nodes and edges for the graph based on character data
-
+  // Update nodes and edges for the graph based on character data
   useEffect(() => {
-    if (people.length && films.length && starships.length) {
+    if (people.length) {
       const selectedPerson = people.find((person) => {
         const parts = person.url.split('/');
         const index = parseInt(parts[parts.length - 2], 10);
@@ -44,56 +44,72 @@ const CharacterGraph: React.FC<Props> = ({ characterId }) => {
         const selectedStarships = starships.filter((starship) => {
           const parts = starship.url.split('/');
           const starshipId = parseInt(parts[parts.length - 2], 10);
-          return selectedPerson.starships.includes(String(starshipId));
+
+          return selectedPerson.starships.includes(starshipId);
         });
 
         const selectedFilms = films.filter((film) => {
           const parts = film.url.split('/');
           const filmId = parseInt(parts[parts.length - 2], 10);
-          return selectedPerson.films.includes(String(filmId));
+
+          return selectedPerson.films.includes(filmId);
         });
 
-        const filmNodes = selectedFilms.map(film => ({
+        const gridGap = 170; // Space between nodes in the grid
+        const filmNodes = selectedFilms.map((film, index) => ({
           id: `film-${film.url}`,
           data: { label: film.title },
-          position: { x: Math.random() * 400, y: Math.random() * 400 },
+          position: { x: 100 + index * gridGap, y: 200 },
+          style: { backgroundColor: 'lightblue', border: '1px solid blue' }
         }));
 
-        const starshipNodes = selectedStarships.map(starship => ({
+        const starshipNodes = selectedStarships.map((starship, index) => ({
           id: `starship-${starship.url}`,
           data: { label: starship.name },
-          position: { x: Math.random() * 400, y: Math.random() * 400 },
+          position: { x: 100 + index * gridGap, y: 300 },
+          style: { backgroundColor: 'lightgreen', border: '1px solid green' }
         }));
 
         const characterNode = {
           id: `character-${characterId}`,
           data: { label: selectedPerson.name },
           position: { x: 250, y: 50 },
+          style: { backgroundColor: 'lightred', border: '1px solid red' }
         };
 
-        const newEdges = selectedFilms.flatMap(film =>
-          film.starships.map(starshipUrl => ({
-            id: `e${film.url}-${starshipUrl}`,
-            source: `film-${film.url}`,
-            target: `starship-${starshipUrl}`,
-            animated: true,
-          }))
-        );
+        const filmEdges = selectedFilms.map(film => ({
+          id: `e-film-${film.url}-character-${characterId}`,
+          source: `film-${film.url}`,
+          target: `character-${characterId}`,
+          animated: true,
+          arrowHeadType: 'arrowclosed',
+        }));
+
+        const starshipEdges = selectedStarships.map(starship => ({
+          id: `e-starship-${starship.url}-character-${characterId}`,
+          source: `starship-${starship.url}`,
+          target: `character-${characterId}`,
+          animated: true,
+          arrowHeadType: 'arrowclosed',
+        }));
 
         setNodes([characterNode, ...filmNodes, ...starshipNodes]);
-        setEdges(newEdges);
+        setEdges([...filmEdges, ...starshipEdges]);
 
-        console.log('Nodes:', [...filmNodes, ...starshipNodes]);
-        // console.log('Edges:', newEdges);
+        console.log('Nodes:', [characterNode, ...filmNodes, ...starshipNodes]);
+        console.log('Edges:', [...filmEdges, ...starshipEdges]);
       }
     }
   }, [films, starships, people, characterId]);
 
+  const memoizedNodes = useMemo(() => nodes, [nodes]);
+  const memoizedEdges = useMemo(() => edges, [edges]);
+
   return (
     <div style={{ height: 600, width: '100%' }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={memoizedNodes}
+        edges={memoizedEdges}
         fitView
       >
         <MiniMap />

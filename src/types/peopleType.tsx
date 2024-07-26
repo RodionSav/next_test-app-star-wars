@@ -8,10 +8,10 @@ export type Character = {
   birth_year: string;
   gender: string;
   homeworld: string;
-  films: string[];
+  films: number[];
   species: string[];
   vehicles: string[];
-  starships: string[];
+  starships: number[];
   created: string;
   edited: string;
   url: string;

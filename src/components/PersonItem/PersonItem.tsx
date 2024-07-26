@@ -55,7 +55,11 @@ const PersonItem: React.FC<Props> = ({ person }) => {
     >
       {!showGraph && (
         <>
-          <Button onClick={handleFavouriteAdder} marginRight={275}>
+          <Button
+            onClick={handleFavouriteAdder}
+            marginRight={275}
+            bg={isFavourite ? "pink.500" : "white"}
+            >
             {isFavourite ? "❤️" : "🤍"}
           </Button>
           <Text
@@ -78,8 +82,8 @@ const PersonItem: React.FC<Props> = ({ person }) => {
             onClick={() => setShowGraph(!showGraph)}
             bg="red.500"
             textColor="white.200"
-            right='0'
-            marginBottom='38%'
+            right="0"
+            marginBottom="38%"
           >
             Close information
           </Button>

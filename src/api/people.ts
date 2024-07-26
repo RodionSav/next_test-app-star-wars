@@ -10,8 +10,8 @@ import {
   StarshipsResponse,
 } from "../types/peopleType";
 
-export function getPeople(page = 1) {
-  return client.get<ApiResponse>(`/people?page=${page}`);
+export function getPeople() {
+  return client.get<ApiResponse>(`/people`);
 }
 
 export function getPlanets() {
