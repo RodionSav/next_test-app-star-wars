@@ -114,3 +114,4 @@ const CharacterGraph: React.FC<Props> = ({ characterId }) => {
 };
 
 export default CharacterGraph;
+
