@@ -2,6 +2,9 @@
 
 This is a web application that allows users to view a list of Star Wars heroes, along with detailed information about the spaceships and movies associated with each hero. The project uses the latest version of Next.js for application structure, Axios for API requests, and React Flow for visualizing information in a graph format.
 
+## DEMO LINK
+[DEMO LINK](https://next-test-app-star-wars-uqc9.vercel.app/).
+
 ## Features
 
 - **Heroes List:** Displays a paginated or infinite scroll list of all Star Wars heroes using the [StarWars API](https://sw-api.starnavi.io).
