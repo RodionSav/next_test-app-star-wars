@@ -33,7 +33,6 @@ This is a web application that allows users to view a list of Star Wars heroes, 
 1. Clone the repository:
     ```sh
     git clone https://github.com/RodionSav/next_test-app-star-wars.git
-    cd star-wars-heroes-viewer
     ```
 
 2. Install dependencies:
