@@ -17,7 +17,6 @@ This is a web application that allows users to view a list of Star Wars heroes, 
 - **UI Library:** [Chakra UI](https://chakra-ui.com/) or [Tailwind CSS](https://tailwindcss.com/)
 - **Graph Visualization:** [React Flow](https://reactflow.dev/)
 - **Testing:** [Jest](https://jestjs.io/) or [ViTest](https://vitest.dev/)
-- **Monorepo Tool:** [Turborepo](https://turbo.build/repo) (optional)
 
 ## Getting Started
 
