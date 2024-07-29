@@ -1,7 +1,7 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## DEMO LINK
-[DEMO LINK](https://vercel.com/rodionsavs-projects/next-test-app-star-wars-uqc9/55w64ugEzRJFgQFeeTEJKAz93R6A).
+[DEMO LINK](https://next-test-app-star-wars-uqc9.vercel.app/).
 
 ## Getting Started
 
