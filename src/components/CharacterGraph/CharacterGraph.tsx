@@ -25,11 +25,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId }) => {
     dispatch(peopleActions.filmsInit());
     dispatch(peopleActions.starshipsInit());
     dispatch(peopleActions.peopleInit());
-
-    // console.log('people: ', people);
-    // console.log('starships: ', starships);
-    // console.log('films: ', films);
-  }, [films, starships, people, characterId]);
+  }, [dispatch]);
 
   // Update nodes and edges for the graph based on character data
   useEffect(() => {
@@ -95,12 +91,9 @@ const CharacterGraph: React.FC<Props> = ({ characterId }) => {
 
         setNodes([characterNode, ...filmNodes, ...starshipNodes]);
         setEdges([...filmEdges, ...starshipEdges]);
-
-        // console.log('Nodes:', [characterNode, ...filmNodes, ...starshipNodes]);
-        // console.log('Edges:', [...filmEdges, ...starshipEdges]);
       }
     }
-  }, [films, starships, people, characterId]);
+  }, []);
 
   const memoizedNodes = useMemo(() => nodes, [nodes]);
   const memoizedEdges = useMemo(() => edges, [edges]);
