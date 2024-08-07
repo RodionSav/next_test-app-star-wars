@@ -15,7 +15,11 @@ async function request<T>(
   method: RequestMethod = "GET",
   data: unknown = null
 ): Promise<T> {
-  const axiosConfig: Record<string, any> = { method, url: BASE_URL + url };
+  const axiosConfig: Record<string, any> = { 
+    method, 
+    url: BASE_URL + url,
+    timeout: 5000, // Optional timeout
+  };
 
   if (data) {
     axiosConfig.data = data;
@@ -29,8 +33,9 @@ async function request<T>(
   try {
     const response = await axios(axiosConfig);
     return response.data as T;
-  } catch (error) {
-    throw new Error("Request failed");
+  } catch (error: any) {
+    console.error("Request failed with error:", error); // Detailed error logging
+    throw new Error(`Request failed: ${error.message}`);
   }
 }
 

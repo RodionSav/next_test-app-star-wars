@@ -10,8 +10,17 @@ import {
   StarshipsResponse,
 } from "../types/peopleType";
 
-export function getPeople(page = 1) {
-  return client.get<ApiResponse>(`/people?page=${page}`);
+export function getPeopleWithPagination(page: number, limit: number = 10) {
+  return client.get<ApiResponse>(`/people?page=${page}&limit=${limit}`);
+}
+
+export function getPeople() {
+  return client.get<ApiResponse>(`/people`);
+}
+
+
+export function getPerson(personId: string) {
+  return client.get(`/people/${personId}`)
 }
 
 export function getPlanets() {
@@ -26,9 +35,6 @@ export function getFilms() {
   return client.get<FilmsResponse>('/films');
 }
 
-export function getStarships() {
-  return client.get<StarshipsResponse>('/starships');
-}
 
 export function getCharacterDetails(id: string) {
   return client.get<Character>(`/people/${id}`);
@@ -40,4 +46,8 @@ export function getFilm(id: string) {
 
 export function getStarship(id: string) {
   return client.get<Starship>(`/starships/${id}`);
+}
+
+export function getStarships() {
+  return client.get<StarshipsResponse>('/starships');
 }

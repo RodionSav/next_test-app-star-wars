@@ -1,95 +1,55 @@
-import { Box, Text, Button } from "@chakra-ui/react";
-import { useState } from "react";
-import * as favouriteActions from "../features/favouriteSlice";
-import CharacterGraph from "../CharacterGraph/CharacterGraph";
+import { Box, Text } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 import { Character } from "@/types/peopleType";
-import { useAppDispatch, useAppSelector } from "@/reduxApp/hooks";
+import { getPlanets } from "@/api/people";
+import Link from "next/link";
 
 type Props = {
   person: Character;
 };
 
 const PersonItem: React.FC<Props> = ({ person }) => {
-  const dispatch = useAppDispatch();
-  const [isFavourite, setIsFavourite] = useState(false);
-  const [showGraph, setShowGraph] = useState(false);
-  const planets = useAppSelector((state) => state.people.itemsPlanets.results);
+  const [planets, setPlanets] = useState<{ url: string; name: string }[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Find the name of the homeworld of the person
+  const characterId = person.url.split("/").slice(-2, -1)[0];
+
+  useEffect(() => {
+    setLoading(true);
+    getPlanets()
+      .then((response) => {
+        setPlanets(response.results);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   const homeworld =
     planets.find((planet) => planet.url === person.homeworld)?.name ||
     "unknown";
 
-  // Toggle the favorite status of the person and update the count in the store
-  const handleFavouriteAdder = () => {
-    setIsFavourite(!isFavourite);
-    if (!isFavourite) {
-      if (person.gender === "male") {
-        //  Database error: female is being recorded as male.
-        dispatch(favouriteActions.incrementFemaleFavorites());
-      } else if (person.gender === "female") {
-        dispatch(favouriteActions.incrementMaleFavorites());
-      } else {
-        dispatch(favouriteActions.incrementOtherFavorites());
-      }
-    } else {
-      if (person.gender === "male") {
-        dispatch(favouriteActions.decrementFemaleFavorites());
-      } else if (person.gender === "female") {
-        dispatch(favouriteActions.decrementMaleFavorites());
-      } else {
-        dispatch(favouriteActions.decrementOtherFavorites());
-      }
-    }
-  };
-
   return (
-    <Box
-      as="li"
-      display="flex"
-      alignItems="center"
-      p="2"
-      bg="blue.50"
-      mb="2"
-      borderRadius="md"
-    >
-      {!showGraph && (
-        <>
-          <Button
-            onClick={handleFavouriteAdder}
-            marginRight={275}
-            bg={isFavourite ? "pink.500" : "white"}
-            >
-            {isFavourite ? "❤️" : "🤍"}
-          </Button>
-          <Text
-            flex="1"
-            onClick={() => setShowGraph(!showGraph)}
-            cursor="pointer"
-          >
-            {person.name}
-          </Text>
-          <Text flex="1">{person.gender}</Text>
-          <Text flex="1">{homeworld}</Text>
-        </>
-      )}
-      {showGraph && (
-        <>
-          <CharacterGraph
-            characterId={person.url.split("/").slice(-2, -1)[0]}
-          />
-          <Button
-            onClick={() => setShowGraph(!showGraph)}
-            bg="red.500"
-            textColor="white.200"
-            right="0"
-            marginBottom="38%"
-          >
-            Close information
-          </Button>
-        </>
-      )}
-    </Box>
+    <Link href={`/character/${characterId}`} passHref>
+      <Box
+        as="li"
+        display="flex"
+        alignItems="center"
+        p="2"
+        bg="blue.50"
+        mb="2"
+        borderRadius="md"
+        cursor="pointer"
+      >
+        <Text
+          flex="1"
+          cursor={loading ? "wait" : "pointer"}
+          color={loading ? "gray.400" : "black"}
+        >
+          {person.name}
+        </Text>
+        <Text flex="1">{person.gender}</Text>
+        <Text flex="1">{homeworld}</Text>
+      </Box>
+    </Link>
   );
 };
 
