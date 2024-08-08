@@ -15,7 +15,7 @@ const CharacterDetailPage = ({ params }: { params: { id: string }}) => {
   useEffect(() => {
     getPerson(personId)
       .then((response: any) => setPerson(response))
-  }, [personId]);
+  }, []);
 
   if (!person) {
     return <Text color="yellow.400">Loading...</Text>;
@@ -23,7 +23,6 @@ const CharacterDetailPage = ({ params }: { params: { id: string }}) => {
 
   return (
     <Flex
-      minHeight="100vh"
       justifyContent="center"
       alignItems="center"
       bg="gray.900"
@@ -38,7 +37,7 @@ const CharacterDetailPage = ({ params }: { params: { id: string }}) => {
         borderRadius="md"
         boxShadow="2xl"
         width="full"
-        maxW="1200px"
+        maxW="100%"
         color="white"
         textAlign='start'
       >
@@ -52,7 +51,7 @@ const CharacterDetailPage = ({ params }: { params: { id: string }}) => {
         <Text mb="3">Height: {person.height}</Text>
         <Text mb="3">Mass: {person.mass}</Text>
         <Text mb="3">Skin Color: {person.skin_color}</Text>
-        <CharacterGraph characterId={personId} />
+        <CharacterGraph characterId={personId} person={person} />
         <Button onClick={() => router.back()} colorScheme="yellow" mt="6" width="full">
           Back to List
         </Button>

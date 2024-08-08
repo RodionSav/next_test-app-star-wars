@@ -1,7 +1,5 @@
-import { Box, Text } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { Flex, Text } from "@chakra-ui/react";
 import { Character } from "@/types/peopleType";
-import { getPlanets } from "@/api/people";
 import Link from "next/link";
 
 type Props = {
@@ -9,46 +7,39 @@ type Props = {
 };
 
 const PersonItem: React.FC<Props> = ({ person }) => {
-  const [planets, setPlanets] = useState<{ url: string; name: string }[]>([]);
-  const [loading, setLoading] = useState(false);
-
   const characterId = person.url.split("/").slice(-2, -1)[0];
-
-  useEffect(() => {
-    setLoading(true);
-    getPlanets()
-      .then((response) => {
-        setPlanets(response.results);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const homeworld =
-    planets.find((planet) => planet.url === person.homeworld)?.name ||
-    "unknown";
 
   return (
     <Link href={`/character/${characterId}`} passHref>
-      <Box
+      <Flex
         as="li"
         display="flex"
+        flexDirection="column"
         alignItems="center"
-        p="2"
-        bg="blue.50"
+        p="4"
+        bg="black"
         mb="2"
         borderRadius="md"
         cursor="pointer"
+        width="140px"
+        height="200px"
+        border="2px solid #FFD700"
+        color="white"
+        fontFamily="'Star Jedi', sans-serif"
+        textAlign="center"
+        transition="transform 0.2s"
+        _hover={{ transform: "scale(1.05)" }}
       >
-        <Text
-          flex="1"
-          cursor={loading ? "wait" : "pointer"}
-          color={loading ? "gray.400" : "black"}
-        >
+        <Text fontSize="lg" fontWeight="bold" mb="2">
           {person.name}
         </Text>
-        <Text flex="1">{person.gender}</Text>
-        <Text flex="1">{homeworld}</Text>
-      </Box>
+        <Text fontSize="sm" mb="1">
+          Gender: {person.gender}
+        </Text>
+        <Text fontSize="sm" mb="1">
+          Height: {person.height} cm
+        </Text>
+      </Flex>
     </Link>
   );
 };

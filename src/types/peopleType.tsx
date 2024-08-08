@@ -11,7 +11,7 @@ export type Character = {
   films: number[];
   species: string[];
   vehicles: string[];
-  starships: number[];
+  starships: string[];
   created: string;
   edited: string;
   url: string;

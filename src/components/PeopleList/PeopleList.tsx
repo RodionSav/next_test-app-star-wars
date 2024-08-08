@@ -4,9 +4,12 @@ import PersonItem from "../PersonItem/PersonItem";
 import { getPeopleWithPagination } from "@/api/people";
 import { Character } from "@/types/peopleType";
 
+const ITEMS_PER_PAGE = 10;
+
 export const PeopleList = () => {
   const [people, setPeople] = useState<Character[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
   // Fetch people data with pagination
@@ -15,47 +18,32 @@ export const PeopleList = () => {
     getPeopleWithPagination(currentPage)
       .then((response) => {
         setPeople(response.results);
+        setTotalPages(Math.ceil(response.count / ITEMS_PER_PAGE)); // Calculate total pages
       })
       .finally(() => setLoading(false));
   }, [currentPage]);
 
-  // Handler for going to the next page
-  const handleNextPage = () => {
-    setCurrentPage((prevPage) => prevPage + 1);
-  };
-
-  // Handler for going to the previous page
-  const handlePrevPage = () => {
-    setCurrentPage((prevPage) => prevPage - 1);
+  // Handler for going to a specific page
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
     <Box bg="gray.900" p="4" borderRadius="md">
-      {/* Header */}
-      <Flex
-        alignItems="center"
-        justifyContent="start"
-        fontWeight="bold"
-        p="2"
-        bg="gray.800"
-        color="yellow.300"
-        borderRadius="md"
-      >
-        <Box flex="1" textAlign="left">
-          Name
-        </Box>
-        <Box flex="1" textAlign="left">
-          Gender
-        </Box>
-        <Box flex="1" textAlign="left">
-          Home
-        </Box>
-      </Flex>
-
       {/* People List */}
-      <Box as="ul" listStyleType="none" p="0" mt="2">
+      <Flex
+        margin="auto"
+        as="ul"
+        listStyleType="none"
+        p="0"
+        mt="2"
+        gap="10px"
+        width="740px"
+        height="420px"
+        flexWrap="wrap"
+      >
         {loading ? (
-          <Spinner color="yellow.300" />
+          <Spinner margin='auto' color="yellow.300" width='70px' height='70px' />
         ) : people.length > 0 ? (
           people.map((person, index) => (
             <PersonItem key={index} person={person} />
@@ -63,21 +51,30 @@ export const PeopleList = () => {
         ) : (
           <Text color="yellow.300">No characters found.</Text>
         )}
-      </Box>
+      </Flex>
 
       {/* Pagination Controls */}
-      <Flex justify="space-between" mt="4">
+      <Flex justify="center" mt="4" gap="2">
         <Button
-          onClick={handlePrevPage}
+          onClick={() => handlePageChange(currentPage - 1)}
           isDisabled={currentPage === 1}
           colorScheme="yellow"
         >
           Previous
         </Button>
-        <Text color="yellow.300">Page {currentPage}</Text>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <Button
+            key={i}
+            onClick={() => handlePageChange(i + 1)}
+            colorScheme="yellow"
+            variant={currentPage === i + 1 ? "solid" : "outline"}
+          >
+            {i + 1}
+          </Button>
+        ))}
         <Button
-          onClick={handleNextPage}
-          isDisabled={currentPage === 9}
+          onClick={() => handlePageChange(currentPage + 1)}
+          isDisabled={currentPage === totalPages}
           colorScheme="yellow"
         >
           Next
