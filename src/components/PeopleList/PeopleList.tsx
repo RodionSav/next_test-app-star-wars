@@ -18,7 +18,7 @@ export const PeopleList = () => {
     getPeopleWithPagination(currentPage)
       .then((response) => {
         setPeople(response.results);
-        setTotalPages(Math.ceil(response.count / ITEMS_PER_PAGE)); // Calculate total pages
+        setTotalPages(Math.ceil(response.count / ITEMS_PER_PAGE));
       })
       .finally(() => setLoading(false));
   }, [currentPage]);
@@ -38,12 +38,18 @@ export const PeopleList = () => {
         p="0"
         mt="2"
         gap="10px"
-        width="740px"
-        height="420px"
+        width={["100%", "100%", "740px"]}
+        height={["1080px", "880px", "480px"]}
         flexWrap="wrap"
+        justifyContent={{ base: "center", sm: "start", md: "start" }}
       >
         {loading ? (
-          <Spinner margin='auto' color="yellow.300" width='70px' height='70px' />
+          <Spinner
+            margin="auto"
+            color="yellow.300"
+            width="70px"
+            height="70px"
+          />
         ) : people.length > 0 ? (
           people.map((person, index) => (
             <PersonItem key={index} person={person} />
@@ -54,28 +60,34 @@ export const PeopleList = () => {
       </Flex>
 
       {/* Pagination Controls */}
-      <Flex justify="center" mt="4" gap="2">
+      <Flex justify="center" mt="4" gap="2" wrap="wrap">
         <Button
           onClick={() => handlePageChange(currentPage - 1)}
           isDisabled={currentPage === 1}
           colorScheme="yellow"
+          width={{ base: "25px", sm: "50px", md: "50px" }}
         >
-          Previous
+          Prev
         </Button>
-        {Array.from({ length: totalPages }, (_, i) => (
+        {Array.from(
+          { length: Math.min(totalPages, 3) },
+          (_, i) => i + Math.max(1, Math.min(currentPage - 1, totalPages - 3))
+        ).map((page) => (
           <Button
-            key={i}
-            onClick={() => handlePageChange(i + 1)}
+            key={page}
+            onClick={() => handlePageChange(page)}
             colorScheme="yellow"
-            variant={currentPage === i + 1 ? "solid" : "outline"}
+            variant={currentPage === page ? "solid" : "outline"}
+            width={{ base: "20px" }}
           >
-            {i + 1}
+            {page}
           </Button>
         ))}
         <Button
           onClick={() => handlePageChange(currentPage + 1)}
           isDisabled={currentPage === totalPages}
           colorScheme="yellow"
+          width={{ base: "25px", sm: "50px", md: "50px" }}
         >
           Next
         </Button>

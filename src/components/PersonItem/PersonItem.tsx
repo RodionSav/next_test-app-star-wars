@@ -21,8 +21,8 @@ const PersonItem: React.FC<Props> = ({ person }) => {
         mb="2"
         borderRadius="md"
         cursor="pointer"
-        width="140px"
-        height="200px"
+        width={{ base: '110px', sm: '120px', md: '140px' }}
+        height={{ base: "200px", md: "200px" }}
         border="2px solid #FFD700"
         color="white"
         fontFamily="'Star Jedi', sans-serif"
@@ -30,13 +30,13 @@ const PersonItem: React.FC<Props> = ({ person }) => {
         transition="transform 0.2s"
         _hover={{ transform: "scale(1.05)" }}
       >
-        <Text fontSize="lg" fontWeight="bold" mb="2">
+        <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" mb="2">
           {person.name}
         </Text>
-        <Text fontSize="sm" mb="1">
+        <Text fontSize={{ base: "sm", md: "sm" }} mb="1">
           Gender: {person.gender}
         </Text>
-        <Text fontSize="sm" mb="1">
+        <Text fontSize={{ base: "sm", md: "sm" }} mb="1">
           Height: {person.height} cm
         </Text>
       </Flex>
