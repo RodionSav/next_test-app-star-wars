@@ -10,8 +10,8 @@ import {
   StarshipsResponse,
 } from "../types/peopleType";
 
-export function getPeopleWithPagination(page: number, limit: number = 10) {
-  return client.get<ApiResponse>(`/people?page=${page}&limit=${limit}`);
+export function getPeopleWithPagination(page: number) {
+  return client.get<ApiResponse>(`/people?page=${page}`);
 }
 
 export function getPeople() {

@@ -71,7 +71,7 @@ export const PeopleList = () => {
         </Button>
         {Array.from(
           { length: Math.min(totalPages, 3) },
-          (_, i) => i + Math.max(1, Math.min(currentPage - 1, totalPages - 3))
+          (_, i) => i + Math.max(1, Math.min(currentPage - 1, totalPages - 2))
         ).map((page) => (
           <Button
             key={page}
@@ -95,4 +95,3 @@ export const PeopleList = () => {
     </Box>
   );
 };
-

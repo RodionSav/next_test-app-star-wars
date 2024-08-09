@@ -1,6 +1,16 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
-import ReactFlow, { ReactFlowProvider, Node, Edge, Background, useReactFlow } from "react-flow-renderer";
-import { getFilms, getStarships, getStarship } from "@/api/people";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import ReactFlow, {
+  ReactFlowProvider,
+  Node,
+  Edge,
+  Background,
+  useReactFlow,
+  applyNodeChanges,
+  applyEdgeChanges,
+  OnNodesChange,
+  OnEdgesChange,
+} from "react-flow-renderer";
+import { getFilms, getStarship } from "@/api/people";
 import { Character, Film, Starship } from "@/types/peopleType";
 
 type Props = {
@@ -9,40 +19,68 @@ type Props = {
 };
 
 const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
-  const [films, setFilms] = useState<Film[]>([]);
-  const [starships, setStarships] = useState<Starship[]>([]);
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
-  const { fitView, setViewport, getViewport } = useReactFlow();
+  const [films, setFilms] = useState<Film[]>([]); // State to store films
+  const [starships, setStarships] = useState<Starship[]>([]); // State to store starships
+  const [nodes, setNodes] = useState<Node[]>([]); // State to store graph nodes
+  const [edges, setEdges] = useState<Edge[]>([]); // State to store graph edges
+  const { fitView } = useReactFlow(); // Hook to fit the view of the graph
 
-  // Fetch the list of all films on component mount
+  const prevStarshipsRef = useRef<Set<string>>(new Set()); // Tracks previously loaded starships
+  const prevCharacterIdRef = useRef<string | null>(null); // Tracks the previous character ID
+
   useEffect(() => {
+    // Fetches all films on component mount
     getFilms().then((response: any) => setFilms(response.results));
   }, []);
 
-  // Fetch the starships associated with the character
-  useEffect(() => {
-    Promise.all(person?.starships.map((shipId) => getStarship(shipId)))
-      .then(setStarships);
-  }, [person?.starships]);
+  const loadStarships = useCallback(async () => {
+    // Only load starships if character ID has changed
+    if (person?.starships && characterId !== prevCharacterIdRef.current) {
+      prevCharacterIdRef.current = characterId;
 
-  // Memoize the films and starships data to prevent unnecessary recalculations
+      // Filter out starships that have already been loaded
+      const uniqueStarships = person.starships.filter(
+        (shipId) => !prevStarshipsRef.current.has(shipId)
+      );
+
+      if (uniqueStarships.length > 0) {
+        for (let i = 0; i < uniqueStarships.length; i++) {
+          try {
+            const starship = await getStarship(uniqueStarships[i]);
+            setStarships((prevStarships) => [...prevStarships, starship]);
+            prevStarshipsRef.current.add(uniqueStarships[i]);
+
+            // Optional delay between requests (removed timer)
+            if (uniqueStarships.length > 2) {
+              await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+          } catch (error) {
+            console.error("Error loading starships:", error);
+          }
+        }
+      }
+    }
+  }, [characterId, person]);
+
+  useEffect(() => {
+    loadStarships();
+  }, [loadStarships]);
+
   const memoizedFilms = useMemo(() => films, [films]);
   const memoizedStarships = useMemo(() => starships, [starships]);
 
-  // Set up nodes and edges for the graph based on the character's films and starships
   useEffect(() => {
     if (person) {
-      // Filter the films that the character appears in
+      // Filter films based on the character's film list
       const selectedFilms = memoizedFilms.filter((film) => {
         const parts = film.url.split("/");
         const filmId = parseInt(parts[parts.length - 2], 10);
         return person.films.includes(filmId);
       });
 
-      const gridGap = 170; // Gap between nodes in the graph
+      const gridGap = 170; // Set gap between nodes in the grid
 
-      // Create film nodes
+      // Create nodes for films
       const filmNodes = selectedFilms.map((film, index) => ({
         id: `film-${film.url}`,
         data: { label: film.title },
@@ -50,7 +88,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         style: { backgroundColor: "lightblue", border: "1px solid blue" },
       }));
 
-      // Create starship nodes
+      // Create nodes for starships
       const starshipNodes = memoizedStarships.map((starship, index) => ({
         id: `starship-${starship.url}`,
         data: { label: starship.name },
@@ -58,7 +96,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         style: { backgroundColor: "lightgreen", border: "1px solid green" },
       }));
 
-      // Create the main character node
+      // Create the character node
       const characterNode = {
         id: `character-${characterId}`,
         data: { label: person.name },
@@ -66,7 +104,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         style: { backgroundColor: "lightred", border: "1px solid red" },
       };
 
-      // Create edges connecting films to the character node
+      // Create edges connecting films to the character
       const filmEdges = selectedFilms.map((film) => ({
         id: `e-film-${film.url}-character-${characterId}`,
         source: `film-${film.url}`,
@@ -75,7 +113,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         arrowHeadType: "arrowclosed",
       }));
 
-      // Create edges connecting starships to the character node
+      // Create edges connecting starships to the character
       const starshipEdges = memoizedStarships.map((starship) => ({
         id: `e-starship-${starship.url}-character-${characterId}`,
         source: `starship-${starship.url}`,
@@ -84,36 +122,30 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         arrowHeadType: "arrowclosed",
       }));
 
-      // Set the nodes and edges in the state
-      setNodes([characterNode, ...filmNodes, ...starshipNodes]);
-      setEdges([...filmEdges, ...starshipEdges]);
+      setNodes([characterNode, ...filmNodes, ...starshipNodes]); // Set all nodes
+      setEdges([...filmEdges, ...starshipEdges]); // Set all edges
 
-      // Adjust the view to fit all nodes
-      fitView();
+      fitView(); // Fit the graph view to the nodes
     }
   }, [characterId, person, memoizedStarships, memoizedFilms, fitView]);
 
-  // Center the graph in the viewport
-  const centerGraph = useCallback(() => {
-    const viewport = getViewport();
-    const { x, y, zoom } = viewport;
-    setViewport({ x, y, zoom });
-  }, [getViewport, setViewport]);
-
-  // Center the graph whenever nodes or edges change
-  useEffect(() => {
-    centerGraph();
-  }, [nodes, edges, centerGraph]);
-
-  // Memoize nodes and edges to avoid unnecessary re-renders
-  const memoizedNodes = useMemo(() => nodes, [nodes]);
-  const memoizedEdges = useMemo(() => edges, [edges]);
+  // Handlers for node and edge changes
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    []
+  );
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    []
+  );
 
   return (
     <div style={{ height: 400, width: "100%", overflow: "hidden" }}>
       <ReactFlow
-        nodes={memoizedNodes}
-        edges={memoizedEdges}
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
         fitView={false}
       >
         <Background />
@@ -122,7 +154,6 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
   );
 };
 
-// Wrap the CharacterGraph component with ReactFlowProvider to handle React Flow context
 const CharacterGraphWithProvider: React.FC<Props> = (props) => {
   return (
     <ReactFlowProvider>
