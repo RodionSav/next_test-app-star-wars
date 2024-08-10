@@ -11,8 +11,9 @@ export const PeopleList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadingCharacter, setLoadingCharacter] = useState(false); // New state
+  const [showPagination, setShowPagination] = useState(true); // New state for pagination visibility
 
-  // Fetch people data with pagination
   useEffect(() => {
     setLoading(true);
     getPeopleWithPagination(currentPage)
@@ -23,13 +24,25 @@ export const PeopleList = () => {
       .finally(() => setLoading(false));
   }, [currentPage]);
 
-  // Handler for going to a specific page
+  // Handler for character click
+  const handleCharacterClick = () => {
+    setLoadingCharacter(true); // Show spinner and hide pagination
+    setShowPagination(false); // Hide pagination
+  };
+
+  // Reset pagination and character loading state when a character detail page is loaded
+  useEffect(() => {
+    if (!loadingCharacter) {
+      setShowPagination(true);
+    }
+  }, [loadingCharacter]);
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
   return (
-    <Box bg="gray.900" p="4" borderRadius="md">
+    <Box p="4" borderRadius="md">
       {/* People List */}
       <Flex
         margin="auto"
@@ -43,7 +56,14 @@ export const PeopleList = () => {
         flexWrap="wrap"
         justifyContent={{ base: "center", sm: "start", md: "start" }}
       >
-        {loading ? (
+        {loadingCharacter ? ( // Show spinner when character details are loading
+          <Spinner
+            margin="auto"
+            color="yellow.300"
+            width="70px"
+            height="70px"
+          />
+        ) : loading ? (
           <Spinner
             margin="auto"
             color="yellow.300"
@@ -52,7 +72,11 @@ export const PeopleList = () => {
           />
         ) : people.length > 0 ? (
           people.map((person, index) => (
-            <PersonItem key={index} person={person} />
+            <PersonItem
+              key={index}
+              person={person}
+              onCharacterClick={handleCharacterClick} // Pass the handler to PersonItem
+            />
           ))
         ) : (
           <Text color="yellow.300">No characters found.</Text>
@@ -60,38 +84,40 @@ export const PeopleList = () => {
       </Flex>
 
       {/* Pagination Controls */}
-      <Flex justify="center" mt="4" gap="2" wrap="wrap">
-        <Button
-          onClick={() => handlePageChange(currentPage - 1)}
-          isDisabled={currentPage === 1}
-          colorScheme="yellow"
-          width={{ base: "25px", sm: "50px", md: "50px" }}
-        >
-          Prev
-        </Button>
-        {Array.from(
-          { length: Math.min(totalPages, 3) },
-          (_, i) => i + Math.max(1, Math.min(currentPage - 1, totalPages - 2))
-        ).map((page) => (
+      {showPagination && ( // Show pagination only when not loading character details
+        <Flex justify="center" mt="4" gap="2" wrap="wrap">
           <Button
-            key={page}
-            onClick={() => handlePageChange(page)}
+            onClick={() => handlePageChange(currentPage - 1)}
+            isDisabled={currentPage === 1}
             colorScheme="yellow"
-            variant={currentPage === page ? "solid" : "outline"}
-            width={{ base: "20px" }}
+            width={{ base: "25px", sm: "50px", md: "50px" }}
           >
-            {page}
+            Prev
           </Button>
-        ))}
-        <Button
-          onClick={() => handlePageChange(currentPage + 1)}
-          isDisabled={currentPage === totalPages}
-          colorScheme="yellow"
-          width={{ base: "25px", sm: "50px", md: "50px" }}
-        >
-          Next
-        </Button>
-      </Flex>
+          {Array.from(
+            { length: Math.min(totalPages, 3) },
+            (_, i) => i + Math.max(1, Math.min(currentPage - 1, totalPages - 2))
+          ).map((page) => (
+            <Button
+              key={page}
+              onClick={() => handlePageChange(page)}
+              colorScheme="yellow"
+              variant={currentPage === page ? "solid" : "outline"}
+              width={{ base: "20px" }}
+            >
+              {page}
+            </Button>
+          ))}
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            isDisabled={currentPage === totalPages}
+            colorScheme="yellow"
+            width={{ base: "25px", sm: "50px", md: "50px" }}
+          >
+            Next
+          </Button>
+        </Flex>
+      )}
     </Box>
   );
 };

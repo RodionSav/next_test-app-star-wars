@@ -12,6 +12,8 @@ import ReactFlow, {
 } from "react-flow-renderer";
 import { getFilms, getStarship } from "@/api/people";
 import { Character, Film, Starship } from "@/types/peopleType";
+import { Box, Text } from "@chakra-ui/react";
+import { FaStar, FaFilm, FaRocket } from "react-icons/fa";
 
 type Props = {
   characterId: string;
@@ -19,26 +21,22 @@ type Props = {
 };
 
 const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
-  const [films, setFilms] = useState<Film[]>([]); // State to store films
-  const [starships, setStarships] = useState<Starship[]>([]); // State to store starships
-  const [nodes, setNodes] = useState<Node[]>([]); // State to store graph nodes
-  const [edges, setEdges] = useState<Edge[]>([]); // State to store graph edges
-  const { fitView } = useReactFlow(); // Hook to fit the view of the graph
+  const [films, setFilms] = useState<Film[]>([]);
+  const [starships, setStarships] = useState<Starship[]>([]);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+  const { fitView } = useReactFlow();
 
-  const prevStarshipsRef = useRef<Set<string>>(new Set()); // Tracks previously loaded starships
-  const prevCharacterIdRef = useRef<string | null>(null); // Tracks the previous character ID
+  const prevStarshipsRef = useRef<Set<string>>(new Set());
+  const prevCharacterIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Fetches all films on component mount
     getFilms().then((response: any) => setFilms(response.results));
   }, []);
 
   const loadStarships = useCallback(async () => {
-    // Only load starships if character ID has changed
     if (person?.starships && characterId !== prevCharacterIdRef.current) {
       prevCharacterIdRef.current = characterId;
-
-      // Filter out starships that have already been loaded
       const uniqueStarships = person.starships.filter(
         (shipId) => !prevStarshipsRef.current.has(shipId)
       );
@@ -49,8 +47,6 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
             const starship = await getStarship(uniqueStarships[i]);
             setStarships((prevStarships) => [...prevStarships, starship]);
             prevStarshipsRef.current.add(uniqueStarships[i]);
-
-            // Optional delay between requests (removed timer)
             if (uniqueStarships.length > 2) {
               await new Promise((resolve) => setTimeout(resolve, 10));
             }
@@ -71,65 +67,104 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
 
   useEffect(() => {
     if (person) {
-      // Filter films based on the character's film list
       const selectedFilms = memoizedFilms.filter((film) => {
-        const parts = film.url.split("/");
-        const filmId = parseInt(parts[parts.length - 2], 10);
-        return person.films.includes(filmId);
+        return person.films.includes(film.id);
       });
 
-      const gridGap = 170; // Set gap between nodes in the grid
+      const gridGap = 170;
 
-      // Create nodes for films
-      const filmNodes = selectedFilms.map((film, index) => ({
-        id: `film-${film.url}`,
-        data: { label: film.title },
-        position: { x: 100 + index * gridGap, y: 200 },
-        style: { backgroundColor: "lightblue", border: "1px solid blue" },
-      }));
+      // Function to create a node with a Star Wars-themed Chakra UI icon
+      const createNode = (
+        id: string,
+        label: string,
+        icon: React.ReactNode,
+        x: number,
+        y: number,
+        bgColor: string
+      ) => ({
+        id,
+        data: {
+          label: (
+            <Box display="flex" alignItems="center">
+              {icon}
+              <Text ml={2} fontFamily="StarJedi, Arial, sans-serif" fontSize="14px">
+                {label}
+              </Text>
+            </Box>
+          ),
+        },
+        position: { x, y },
+        style: {
+          backgroundColor: bgColor,
+          border: "2px solid #ffcc00",
+          color: "#ffe81f",
+          fontFamily: "StarJedi, Arial, sans-serif",
+          boxShadow: "0px 0px 5px #ffcc00",  // Уменьшено свечение
+          borderRadius: "10px",
+          padding: "8px",
+        },
+      });
 
-      // Create nodes for starships
-      const starshipNodes = memoizedStarships.map((starship, index) => ({
-        id: `starship-${starship.url}`,
-        data: { label: starship.name },
-        position: { x: 100 + index * gridGap, y: 300 },
-        style: { backgroundColor: "lightgreen", border: "1px solid green" },
-      }));
+      // Calculate varying y positions to avoid overlapping edges
+      const filmNodes = selectedFilms.map((film, index) =>
+        createNode(
+          `film-${film.id}`,
+          film.title,
+          <FaFilm color="yellow.400" />,
+          100 + index * gridGap,
+          200 + (index % 2 === 0 ? 20 : -20), // Slightly varied y positions
+          "#1c1c1c"
+        )
+      );
 
-      // Create the character node
-      const characterNode = {
-        id: `character-${characterId}`,
-        data: { label: person.name },
-        position: { x: 250, y: 50 },
-        style: { backgroundColor: "lightred", border: "1px solid red" },
-      };
+      const starshipNodes = memoizedStarships.map((starship, index) =>
+        createNode(
+          `starship-${starship.id}`,
+          starship.name,
+          <FaRocket color="yellow.400" />,
+          100 + index * gridGap,
+          300 + (index % 2 === 0 ? 20 : -20), // Slightly varied y positions
+          "#0d3b66"
+        )
+      );
 
-      // Create edges connecting films to the character
+      const characterNode = createNode(
+        `character-${characterId}`,
+        person.name,
+        <FaStar color="yellow.400" />,
+        250,
+        50,
+        "#3e3e3e"
+      );
+
       const filmEdges = selectedFilms.map((film) => ({
-        id: `e-film-${film.url}-character-${characterId}`,
-        source: `film-${film.url}`,
+        id: `e-film-${film.id}-character-${characterId}`,
+        source: `film-${film.id}`,
         target: `character-${characterId}`,
+        type: "smoothstep",
         animated: true,
         arrowHeadType: "arrowclosed",
+        style: { stroke: "#ff0000", strokeWidth: 2 },
       }));
 
-      // Create edges connecting starships to the character
-      const starshipEdges = memoizedStarships.map((starship) => ({
-        id: `e-starship-${starship.url}-character-${characterId}`,
-        source: `starship-${starship.url}`,
-        target: `character-${characterId}`,
-        animated: true,
-        arrowHeadType: "arrowclosed",
-      }));
+      const starshipFilmEdges = memoizedStarships.flatMap((starship) =>
+        starship.films.map((filmId) => ({
+          id: `e-starship-${starship.id}-film-${filmId}`,
+          source: `starship-${starship.id}`,
+          target: `film-${filmId}`,
+          type: "smoothstep",
+          animated: true,
+          arrowHeadType: "arrowclosed",
+          style: { stroke: "#00aaff", strokeWidth: 2 },
+        }))
+      );
 
-      setNodes([characterNode, ...filmNodes, ...starshipNodes]); // Set all nodes
-      setEdges([...filmEdges, ...starshipEdges]); // Set all edges
-
-      fitView(); // Fit the graph view to the nodes
+      setNodes([characterNode, ...filmNodes, ...starshipNodes]);
+      setEdges([...filmEdges, ...starshipFilmEdges]);
+      fitView();
     }
   }, [characterId, person, memoizedStarships, memoizedFilms, fitView]);
 
-  // Handlers for node and edge changes
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     []
@@ -140,15 +175,30 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
   );
 
   return (
-    <div style={{ height: 400, width: "100%", overflow: "hidden" }}>
+    <div style={{ height: 400, width: "100%", position: "relative" }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          height: "100%",
+          width: "100%",
+          background: "rgba(0, 0, 0, 0.3)", // Overlay with reduced opacity
+          zIndex: 1,
+          opacity: 0.1
+        }}
+      />
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView={false}
+        style={{ position: "relative", zIndex: 2 }} // Keep nodes and edges on top
       >
-        <Background />
+        <Background 
+          color="#000000"
+        />
       </ReactFlow>
     </div>
   );

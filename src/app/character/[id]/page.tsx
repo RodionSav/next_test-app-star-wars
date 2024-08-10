@@ -8,29 +8,32 @@ import CharacterGraph from "@/components/CharacterGraph/CharacterGraph";
 import { Character } from "@/types/peopleType";
 
 const CharacterDetailPage = ({ params }: { params: { id: string } }) => {
-  // State to hold the character's details
   const [person, setPerson] = useState<Character | null>(null);
-
-  // Router instance to handle navigation
   const router = useRouter();
-
-  // Extract the person ID from the route parameters
   const personId = params.id;
 
-  // Fetch character details when the component mounts
   useEffect(() => {
     getPerson(personId).then((response: any) => setPerson(response));
-  }, [personId]); // Dependency array ensures this effect runs when personId changes
+  }, [personId]);
 
-  // If the character data is still loading, show a loading message
   if (!person) {
     return <Text color="yellow.400">Loading...</Text>;
   }
 
   return (
-    // Main container for the character detail page
-    <Flex justifyContent="center" alignItems="center" bg="gray.900" p="6">
-      {/* Box containing character information and graph */}
+    <Flex justifyContent="center" alignItems="center" bg="gray.900" p="6" minHeight="100vh">
+      {/* Overlay background for dimming */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        bg="rgba(0, 0, 0, 0.5)"
+        zIndex="0"
+      />
+
+      {/* Main container for content */}
       <Box
         display="flex"
         flexDirection="column"
@@ -43,13 +46,13 @@ const CharacterDetailPage = ({ params }: { params: { id: string } }) => {
         maxW="100%"
         color="white"
         textAlign="start"
+        position="relative"
+        zIndex="1"  // Keeps the content above the overlay
       >
-        {/* Display character's name */}
         <Text fontSize="3xl" fontWeight="bold" mb="6" color="yellow.400">
           {person.name}
         </Text>
 
-        {/* Display various attributes of the character */}
         <Text mb="3">Birth Year: {person.birth_year}</Text>
         <Text mb="3">Eye Color: {person.eye_color}</Text>
         <Text mb="3">Gender: {person.gender}</Text>
@@ -58,10 +61,8 @@ const CharacterDetailPage = ({ params }: { params: { id: string } }) => {
         <Text mb="3">Mass: {person.mass}</Text>
         <Text mb="3">Skin Color: {person.skin_color}</Text>
 
-        {/* Render the character's graph */}
         <CharacterGraph characterId={personId} person={person} />
 
-        {/* Back button to return to the previous page */}
         <Button
           onClick={() => router.back()}
           colorScheme="yellow"

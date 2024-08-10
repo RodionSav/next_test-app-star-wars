@@ -9,7 +9,7 @@ import { PeopleList } from "../PeopleList/PeopleList";
 const AppContent: React.FC = () => {
 
   return (
-    <Box p="6" bg="gray.900" borderRadius="md">
+    <Box p="6" borderRadius="md">
       <Box mb="6">
         <PeopleList />
       </Box>

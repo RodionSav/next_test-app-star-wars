@@ -4,9 +4,10 @@ import Link from "next/link";
 
 type Props = {
   person: Character;
+  onCharacterClick: () => void; // New prop
 };
 
-const PersonItem: React.FC<Props> = ({ person }) => {
+const PersonItem: React.FC<Props> = ({ person, onCharacterClick }) => {
   const characterId = person.url.split("/").slice(-2, -1)[0];
 
   return (
@@ -21,7 +22,7 @@ const PersonItem: React.FC<Props> = ({ person }) => {
         mb="2"
         borderRadius="md"
         cursor="pointer"
-        width={{ base: '110px', sm: '120px', md: '140px' }}
+        width={{ base: "110px", sm: "120px", md: "140px" }}
         height={{ base: "200px", md: "200px" }}
         border="2px solid #FFD700"
         color="white"
@@ -29,6 +30,7 @@ const PersonItem: React.FC<Props> = ({ person }) => {
         textAlign="center"
         transition="transform 0.2s"
         _hover={{ transform: "scale(1.05)" }}
+        onClick={onCharacterClick} // Trigger loading state when clicked
       >
         <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" mb="2">
           {person.name}

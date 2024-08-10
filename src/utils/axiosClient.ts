@@ -15,8 +15,8 @@ async function request<T>(
   method: RequestMethod = "GET",
   data: unknown = null
 ): Promise<T> {
-  const axiosConfig: Record<string, any> = { 
-    method, 
+  const axiosConfig: Record<string, any> = {
+    method,
     url: BASE_URL + url,
     timeout: 5000, // Optional timeout
   };

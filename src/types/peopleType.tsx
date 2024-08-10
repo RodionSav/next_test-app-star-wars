@@ -88,6 +88,7 @@ export interface FilmsResponse {
 }
 
 export interface Film {
+  id: number,
   characters: number[];
   created: string;
   director: string;
