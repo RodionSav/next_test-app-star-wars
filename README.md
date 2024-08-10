@@ -17,7 +17,7 @@ This is a web application that allows users to view a list of Star Wars heroes, 
 
 - **Framework:** [Next.js](https://nextjs.org/)
 - **API Requests:** [Axios](https://axios-http.com/)
-- **UI Library:** [Chakra UI](https://chakra-ui.com/) or [Tailwind CSS](https://tailwindcss.com/)
+- **UI Library:** [Chakra UI](https://chakra-ui.com/) and [Tailwind CSS](https://tailwindcss.com/)
 - **Graph Visualization:** [React Flow](https://reactflow.dev/)
 - **Testing:** [Jest](https://jestjs.io/) or [ViTest](https://vitest.dev/)
 
