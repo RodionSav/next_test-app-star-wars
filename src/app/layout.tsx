@@ -32,7 +32,7 @@ export default function RootLayout({
               zIndex: -1,
             }}
           >
-            <source src="/wallpaper-v5.mp4" type="video/mp4" />
+            <source src="/wallpaper-v7.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 
