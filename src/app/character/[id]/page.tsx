@@ -77,3 +77,4 @@ const CharacterDetailPage = ({ params }: { params: { id: string } }) => {
 };
 
 export default CharacterDetailPage;
+
