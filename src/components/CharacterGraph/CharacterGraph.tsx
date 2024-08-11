@@ -42,16 +42,21 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
       );
 
       if (uniqueStarships.length > 0) {
-        for (let i = 0; i < uniqueStarships.length; i++) {
+        let index = 0;
+        while (index < uniqueStarships.length) {
           try {
-            const starship = await getStarship(uniqueStarships[i]);
+            const starship = await getStarship(uniqueStarships[index]);
             setStarships((prevStarships) => [...prevStarships, starship]);
-            prevStarshipsRef.current.add(uniqueStarships[i]);
+            prevStarshipsRef.current.add(uniqueStarships[index]);
+
+            index += 1;
+
             if (uniqueStarships.length > 2) {
               await new Promise((resolve) => setTimeout(resolve, 10));
             }
           } catch (error) {
             console.error("Error loading starships:", error);
+            index += 1;
           }
         }
       }
@@ -65,6 +70,19 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
   const memoizedFilms = useMemo(() => films, [films]);
   const memoizedStarships = useMemo(() => starships, [starships]);
 
+  const getEdgeColor = (edgeType: string, index: number = 0) => {
+    switch (edgeType) {
+      case 'film':
+        return '#ff0000'; // Red for films
+      case 'starship':
+        // Assigning a different color for each starship based on index
+        const starshipColors = ['#00aaff', '#ff00aa', '#aaff00', '#aa00ff', '#ffaa00'];
+        return starshipColors[index % starshipColors.length];
+      default:
+        return '#888'; // Default color
+    }
+  };
+
   useEffect(() => {
     if (person) {
       const selectedFilms = memoizedFilms.filter((film) => {
@@ -73,7 +91,6 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
 
       const gridGap = 170;
 
-      // Function to create a node with a Star Wars-themed Chakra UI icon
       const createNode = (
         id: string,
         label: string,
@@ -99,20 +116,19 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
           border: "2px solid #ffcc00",
           color: "#ffe81f",
           fontFamily: "StarJedi, Arial, sans-serif",
-          boxShadow: "0px 0px 5px #ffcc00",  // Уменьшено свечение
+          boxShadow: "0px 0px 5px #ffcc00",
           borderRadius: "10px",
           padding: "8px",
         },
       });
 
-      // Calculate varying y positions to avoid overlapping edges
       const filmNodes = selectedFilms.map((film, index) =>
         createNode(
           `film-${film.id}`,
           film.title,
           <FaFilm color="yellow.400" />,
           100 + index * gridGap,
-          200 + (index % 2 === 0 ? 20 : -20), // Slightly varied y positions
+          170,
           "#1c1c1c"
         )
       );
@@ -122,8 +138,8 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
           `starship-${starship.id}`,
           starship.name,
           <FaRocket color="yellow.400" />,
-          100 + index * gridGap,
-          300 + (index % 2 === 0 ? 20 : -20), // Slightly varied y positions
+          100 + index * (gridGap + 50), // Increased gap for more horizontal spacing
+          300 + (index % 2 === 0 ? 30 : -20), // Increased vertical offset for more vertical spacing
           "#0d3b66"
         )
       );
@@ -144,10 +160,10 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         type: "smoothstep",
         animated: true,
         arrowHeadType: "arrowclosed",
-        style: { stroke: "#ff0000", strokeWidth: 2 },
+        style: { stroke: getEdgeColor('film'), strokeWidth: 2 },
       }));
 
-      const starshipFilmEdges = memoizedStarships.flatMap((starship) =>
+      const starshipFilmEdges = memoizedStarships.flatMap((starship, index) =>
         starship.films.map((filmId) => ({
           id: `e-starship-${starship.id}-film-${filmId}`,
           source: `starship-${starship.id}`,
@@ -155,7 +171,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
           type: "smoothstep",
           animated: true,
           arrowHeadType: "arrowclosed",
-          style: { stroke: "#00aaff", strokeWidth: 2 },
+          style: { stroke: getEdgeColor('starship', index), strokeWidth: 2 },
         }))
       );
 

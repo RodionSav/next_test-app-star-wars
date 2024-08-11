@@ -21,6 +21,8 @@
     "css-loader": "^7.1.2",
     "framer-motion": "^11.3.24",
     "jest-styled-components": "^7.2.0",
+    "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",

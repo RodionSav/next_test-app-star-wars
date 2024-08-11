@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { Box, Text, Spinner, Button, Flex } from "@chakra-ui/react";
+import { useState, useEffect, useMemo } from "react";
+import { Box, Text, Spinner, Button, Flex, Input } from "@chakra-ui/react";
 import PersonItem from "../PersonItem/PersonItem";
 import { getPeopleWithPagination } from "@/api/people";
 import { Character } from "@/types/peopleType";
+import debounce from "lodash.debounce";  // Import debounce from lodash
 
 const ITEMS_PER_PAGE = 10;
 
@@ -11,8 +12,10 @@ export const PeopleList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [loadingCharacter, setLoadingCharacter] = useState(false); // New state
-  const [showPagination, setShowPagination] = useState(true); // New state for pagination visibility
+  const [loadingCharacter, setLoadingCharacter] = useState(false);
+  const [showPagination, setShowPagination] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [filtering, setFiltering] = useState(false); // State for filtering
 
   useEffect(() => {
     setLoading(true);
@@ -24,10 +27,28 @@ export const PeopleList = () => {
       .finally(() => setLoading(false));
   }, [currentPage]);
 
+  // Debounce the search input handler to avoid excessive re-renders
+  const debouncedSearchChange = useMemo(() =>
+    debounce((query) => {
+      setSearchQuery(query);
+      setFiltering(false); // End filtering
+    }, 500), []);  // 500ms debounce delay
+
+  // Handle search input change
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const query = event.target.value;
+    setFiltering(true); // Start filtering
+    debouncedSearchChange(query);
+  };
+
+  const filteredPeople = people.filter((person) =>
+    person.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
+  );
+
   // Handler for character click
   const handleCharacterClick = () => {
-    setLoadingCharacter(true); // Show spinner and hide pagination
-    setShowPagination(false); // Hide pagination
+    setLoadingCharacter(true);
+    setShowPagination(false);
   };
 
   // Reset pagination and character loading state when a character detail page is loaded
@@ -43,6 +64,17 @@ export const PeopleList = () => {
 
   return (
     <Box p="4" borderRadius="md">
+      {/* Search Input */}
+      <Input
+        placeholder="Search by name"
+        mb="4"
+        onChange={handleSearchChange}
+        color="yellow.300"
+        borderColor="yellow.300"
+        focusBorderColor="yellow.500"
+        maxWidth='240px'
+      />
+
       {/* People List */}
       <Flex
         margin="auto"
@@ -56,26 +88,19 @@ export const PeopleList = () => {
         flexWrap="wrap"
         justifyContent={{ base: "center", sm: "start", md: "start" }}
       >
-        {loadingCharacter ? ( // Show spinner when character details are loading
+        {loadingCharacter || loading || filtering ? ( // Show spinner during loading, character click, or filtering
           <Spinner
             margin="auto"
             color="yellow.300"
             width="70px"
             height="70px"
           />
-        ) : loading ? (
-          <Spinner
-            margin="auto"
-            color="yellow.300"
-            width="70px"
-            height="70px"
-          />
-        ) : people.length > 0 ? (
-          people.map((person, index) => (
+        ) : filteredPeople.length > 0 ? (
+          filteredPeople.map((person, index) => (
             <PersonItem
               key={index}
               person={person}
-              onCharacterClick={handleCharacterClick} // Pass the handler to PersonItem
+              onCharacterClick={handleCharacterClick}
             />
           ))
         ) : (
@@ -84,7 +109,7 @@ export const PeopleList = () => {
       </Flex>
 
       {/* Pagination Controls */}
-      {showPagination && ( // Show pagination only when not loading character details
+      {showPagination && (
         <Flex justify="center" mt="4" gap="2" wrap="wrap">
           <Button
             onClick={() => handlePageChange(currentPage - 1)}
@@ -93,6 +118,14 @@ export const PeopleList = () => {
             width={{ base: "25px", sm: "50px", md: "50px" }}
           >
             Prev
+          </Button>
+          <Button
+            display={{ base: "none", sm: "inline-flex" }} // Hide ellipsis on mobile
+            colorScheme="yellow"
+            isDisabled={true}
+            width={{ base: "20px" }}
+          >
+            ...
           </Button>
           {Array.from(
             { length: Math.min(totalPages, 3) },
@@ -108,6 +141,14 @@ export const PeopleList = () => {
               {page}
             </Button>
           ))}
+          <Button
+            display={{ base: "none", sm: "inline-flex" }} // Hide ellipsis on mobile
+            colorScheme="yellow"
+            isDisabled={true}
+            width={{ base: "20px" }}
+          >
+            ...
+          </Button>
           <Button
             onClick={() => handlePageChange(currentPage + 1)}
             isDisabled={currentPage === totalPages}
