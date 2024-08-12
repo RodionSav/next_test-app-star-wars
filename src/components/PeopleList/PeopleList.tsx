@@ -3,7 +3,7 @@ import { Box, Text, Spinner, Button, Flex, Input } from "@chakra-ui/react";
 import PersonItem from "../PersonItem/PersonItem";
 import { getPeopleWithPagination } from "@/api/people";
 import { Character } from "@/types/peopleType";
-import debounce from "lodash.debounce";  // Import debounce from lodash
+import debounce from "lodash.debounce";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -14,8 +14,8 @@ export const PeopleList = () => {
   const [loading, setLoading] = useState(false);
   const [loadingCharacter, setLoadingCharacter] = useState(false);
   const [showPagination, setShowPagination] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
-  const [filtering, setFiltering] = useState(false); // State for filtering
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filtering, setFiltering] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -28,11 +28,14 @@ export const PeopleList = () => {
   }, [currentPage]);
 
   // Debounce the search input handler to avoid excessive re-renders
-  const debouncedSearchChange = useMemo(() =>
-    debounce((query) => {
-      setSearchQuery(query);
-      setFiltering(false); // End filtering
-    }, 500), []);  // 500ms debounce delay
+  const debouncedSearchChange = useMemo(
+    () =>
+      debounce((query) => {
+        setSearchQuery(query);
+        setFiltering(false);
+      }, 500),
+    []
+  );
 
   // Handle search input change
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +75,7 @@ export const PeopleList = () => {
         color="yellow.300"
         borderColor="yellow.300"
         focusBorderColor="yellow.500"
-        maxWidth='240px'
+        maxWidth="240px"
       />
 
       {/* People List */}
@@ -120,7 +123,7 @@ export const PeopleList = () => {
             Prev
           </Button>
           <Button
-            display={{ base: "none", sm: "inline-flex" }} // Hide ellipsis on mobile
+            display={{ base: "none", md: currentPage > 2 ? "inline-flex" : "none" }}
             colorScheme="yellow"
             isDisabled={true}
             width={{ base: "20px" }}
@@ -142,7 +145,7 @@ export const PeopleList = () => {
             </Button>
           ))}
           <Button
-            display={{ base: "none", sm: "inline-flex" }} // Hide ellipsis on mobile
+            display={{ base: "none", md: currentPage > totalPages - 2 ? "none" : "inline-flex" }}
             colorScheme="yellow"
             isDisabled={true}
             width={{ base: "20px" }}
