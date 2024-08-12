@@ -16,7 +16,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className} style={{ margin: 0, padding: 0 }}>
         <ChakraProvider theme={theme}>
-          {/* Видео фон */}
           <video
             autoPlay
             loop
@@ -36,7 +35,6 @@ export default function RootLayout({
             Your browser does not support the video tag.
           </video>
 
-          {/* Заголовок */}
           <Text
             color="yellow.400"
             textTransform="uppercase"
@@ -44,12 +42,11 @@ export default function RootLayout({
             fontWeight="bold"
             letterSpacing="wide"
             ml="10px"
-            zIndex={1} // Убедитесь, что текст поверх видео
+            zIndex={1}
           >
             Star Wars Heroes
           </Text>
 
-          {/* Дочерние элементы */}
           {children}
         </ChakraProvider>
       </body>

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 type Props = {
   person: Character;
-  onCharacterClick: () => void; // New prop
+  onCharacterClick: () => void;
 };
 
 const PersonItem: React.FC<Props> = ({ person, onCharacterClick }) => {
@@ -30,7 +30,7 @@ const PersonItem: React.FC<Props> = ({ person, onCharacterClick }) => {
         textAlign="center"
         transition="transform 0.2s"
         _hover={{ transform: "scale(1.05)" }}
-        onClick={onCharacterClick} // Trigger loading state when clicked
+        onClick={onCharacterClick}
       >
         <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" mb="2">
           {person.name}

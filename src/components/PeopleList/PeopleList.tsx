@@ -40,7 +40,7 @@ export const PeopleList = () => {
   // Handle search input change
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
-    setFiltering(true); // Start filtering
+    setFiltering(true);
     debouncedSearchChange(query);
   };
 

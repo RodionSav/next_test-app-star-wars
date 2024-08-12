@@ -27,13 +27,16 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
   const [edges, setEdges] = useState<Edge[]>([]);
   const { fitView } = useReactFlow();
 
+  // Refs to keep track of previous starships and character ID
   const prevStarshipsRef = useRef<Set<string>>(new Set());
   const prevCharacterIdRef = useRef<string | null>(null);
 
+  // Fetch films data on component mount
   useEffect(() => {
     getFilms().then((response: any) => setFilms(response.results));
   }, []);
 
+  // Function to load starships associated with the character
   const loadStarships = useCallback(async () => {
     if (person?.starships && characterId !== prevCharacterIdRef.current) {
       prevCharacterIdRef.current = characterId;
@@ -51,6 +54,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
 
             index += 1;
 
+            // Adding a small delay between requests to avoid hitting API rate limits
             if (uniqueStarships.length > 2) {
               await new Promise((resolve) => setTimeout(resolve, 10));
             }
@@ -63,26 +67,29 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
     }
   }, [characterId, person]);
 
+  // Load starships whenever the character changes
   useEffect(() => {
     loadStarships();
   }, [loadStarships]);
 
+  // Memoize the films and starships to avoid unnecessary re-renders
   const memoizedFilms = useMemo(() => films, [films]);
   const memoizedStarships = useMemo(() => starships, [starships]);
 
+  // Function to determine edge color based on its type
   const getEdgeColor = (edgeType: string, index: number = 0) => {
     switch (edgeType) {
       case 'film':
-        return '#ff0000'; // Red for films
+        return '#ff0000';
       case 'starship':
-        // Assigning a different color for each starship based on index
         const starshipColors = ['#00aaff', '#ff00aa', '#aaff00', '#aa00ff', '#ffaa00'];
         return starshipColors[index % starshipColors.length];
       default:
-        return '#888'; // Default color
+        return '#888';
     }
   };
 
+  // Effect to create nodes and edges whenever person, films, or starships change
   useEffect(() => {
     if (person) {
       const selectedFilms = memoizedFilms.filter((film) => {
@@ -91,6 +98,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
 
       const gridGap = 170;
 
+      // Function to create a node for the graph
       const createNode = (
         id: string,
         label: string,
@@ -122,6 +130,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         },
       });
 
+      // Create film nodes
       const filmNodes = selectedFilms.map((film, index) =>
         createNode(
           `film-${film.id}`,
@@ -133,17 +142,19 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         )
       );
 
+      // Create starship nodes
       const starshipNodes = memoizedStarships.map((starship, index) =>
         createNode(
           `starship-${starship.id}`,
           starship.name,
           <FaRocket color="yellow.400" />,
-          100 + index * (gridGap + 50), // Increased gap for more horizontal spacing
-          300 + (index % 2 === 0 ? 30 : -20), // Increased vertical offset for more vertical spacing
+          100 + index * (gridGap + 50),
+          300 + (index % 2 === 0 ? 30 : -20),
           "#0d3b66"
         )
       );
 
+      // Create the character node
       const characterNode = createNode(
         `character-${characterId}`,
         person.name,
@@ -153,6 +164,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         "#3e3e3e"
       );
 
+      // Create edges between films and the character
       const filmEdges = selectedFilms.map((film) => ({
         id: `e-film-${film.id}-character-${characterId}`,
         source: `film-${film.id}`,
@@ -163,6 +175,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         style: { stroke: getEdgeColor('film'), strokeWidth: 2 },
       }));
 
+      // Create edges between starships and their associated films
       const starshipFilmEdges = memoizedStarships.flatMap((starship, index) =>
         starship.films.map((filmId) => ({
           id: `e-starship-${starship.id}-film-${filmId}`,
@@ -175,12 +188,14 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
         }))
       );
 
+      // Set the nodes and edges for the graph
       setNodes([characterNode, ...filmNodes, ...starshipNodes]);
       setEdges([...filmEdges, ...starshipFilmEdges]);
-      fitView();
+      fitView(); // Adjust the view to fit the nodes
     }
   }, [characterId, person, memoizedStarships, memoizedFilms, fitView]);
 
+  // Handlers for node and edge changes (e.g., drag, delete)
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     []
@@ -192,6 +207,7 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
 
   return (
     <div style={{ height: 400, width: "100%", position: "relative" }}>
+      {/* Overlay background */}
       <div
         style={{
           position: "absolute",
@@ -199,20 +215,21 @@ const CharacterGraph: React.FC<Props> = ({ characterId, person }) => {
           left: 0,
           height: "100%",
           width: "100%",
-          background: "rgba(0, 0, 0, 0.3)", // Overlay with reduced opacity
+          background: "rgba(0, 0, 0, 0.3)",
           zIndex: 1,
           opacity: 0.1
         }}
       />
+      {/* React Flow graph */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView={false}
-        style={{ position: "relative", zIndex: 2 }} // Keep nodes and edges on top
+        style={{ position: "relative", zIndex: 2 }}
       >
-        <Background 
+        <Background
           color="#000000"
         />
       </ReactFlow>
